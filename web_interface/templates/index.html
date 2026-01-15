@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MyAnimeList DB - Search</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="title">MyAnimeList DB</div>
+            <nav>
+                <a href="/" class="active">Search</a>
+                <a href="/insert/anime">Insert Anime</a>
+                <a href="/insert/manga">Insert Manga</a>
+            </nav>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-box">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="s_title" placeholder="e.g. Frieren">
+            </div>
+
+            <div class="form-group">
+                <label>Medium</label>
+                <select id="s_medium">
+                    <option value="all">All</option>
+                    <option value="anime">Anime</option>
+                    <option value="manga">Manga</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Min Score</label>
+                <input type="number" id="s_score" step="0.1" min="0" max="10" placeholder="0.0">
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="form-group">
+                <label>Item Type</label>
+                <select id="s_item_type">
+                    <option value="">Any</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Status</label>
+                <select id="s_status">
+                    <option value="">Any</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Source</label>
+                <select id="s_source">
+                    <option value="">Any</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Rating</label>
+                <select id="s_rating">
+                    <option value="">Any</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Genre</label>
+                <select id="s_genre">
+                    <option value="">Any</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Theme</label>
+                <select id="s_theme">
+                    <option value="">Any</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Season</label>
+                <select id="s_season">
+                    <option value="">Any</option>
+                    <option value="Winter">Winter</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Fall">Fall</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Year</label>
+                <input type="number" id="s_year" placeholder="e.g. 2023">
+            </div>
+
+            <div class="form-group">
+                <label>Limit (Max 100)</label>
+                <input type="number" id="s_limit" placeholder="50" min="1" max="1000" value="50">
+            </div>
+
+            <button onclick="doSearch()">Search</button>
+        </div>
+
+        <div id="results" class="results-grid">
+            <!-- JS will populate this -->
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

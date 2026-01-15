@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Update Entry</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Re-using existing style -->
+    <style>
+        .form-section {
+            margin-bottom: 2rem;
+            border: 1px solid #444;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            background: #222;
+            color: #fff;
+            border: 1px solid #555;
+        }
+
+        button.btn-primary {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #f39c12;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Search</a>
+        <h1>Update Entry <span id="entryHeaderID"></span></h1>
+
+        <div id="loading">Loading Entry Data...</div>
+        <div id="errorMsg" style="color: red;"></div>
+
+        <form id="updateForm" class="hidden">
+            <!-- Hidden ID storage -->
+            <input type="hidden" id="entry_id" name="entry_id">
+            <input type="hidden" id="medium_type" name="medium_type">
+
+            <!-- Common Fields -->
+            <div class="form-section">
+                <h3>General Info</h3>
+                <label>Title</label>
+                <input type="text" name="title_name" id="title_name" required>
+
+                <label>Score</label>
+                <input type="number" step="0.01" name="score" id="score">
+
+                <label>Description</label>
+                <textarea name="description" id="description" rows="4"></textarea>
+
+                <label>Item Type</label>
+                <select name="item_type_id" id="item_type_id"></select>
+
+                <label>Status</label>
+                <select name="status_id" id="status_id"></select>
+
+                <!-- Common M2M -->
+                <label>Genres (Hold Ctrl to select multiple)</label>
+                <select name="genres" id="genres" multiple size="5"></select>
+
+                <label>Themes</label>
+                <select name="themes" id="themes" multiple size="5"></select>
+
+                <label>Demographics</label>
+                <select name="demographics" id="demographics" multiple size="3"></select>
+            </div>
+
+            <!-- Anime Specific -->
+            <div id="animeFields" class="form-section hidden">
+                <h3>Anime Details</h3>
+                <label>Episodes</label>
+                <input type="number" name="episodes" id="episodes">
+
+                <label>Duration (Minutes)</label>
+                <input type="number" name="duration_minutes" id="duration_minutes">
+
+                <label>Premier Year</label>
+                <input type="number" name="premier_date_year" id="premier_date_year">
+
+                <label>Premier Season</label>
+                <select name="premier_date_season" id="premier_date_season">
+                    <option value="">Unknown</option>
+                    <option value="Winter">Winter</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Fall">Fall</option>
+                </select>
+
+                <label>Source</label>
+                <select name="source_id" id="source_id"></select>
+
+                <label>Age Rating</label>
+                <select name="age_rating_id" id="age_rating_id"></select>
+
+                <label>Studios</label>
+                <select name="studios" id="studios" multiple size="5"></select>
+
+                <label>Producers</label>
+                <select name="producers" id="producers" multiple size="5"></select>
+
+                <label>Licensors</label>
+                <select name="licensors" id="licensors" multiple size="5"></select>
+            </div>
+
+            <!-- Manga Specific -->
+            <div id="mangaFields" class="form-section hidden">
+                <h3>Manga Details</h3>
+                <label>Volumes</label>
+                <input type="number" name="volumes" id="volumes">
+
+                <label>Chapters</label>
+                <input type="number" name="chapters" id="chapters">
+
+                <label>Authors</label>
+                <select name="authors" id="authors" multiple size="5"></select>
+
+                <label>Serializations</label>
+                <select name="serializations" id="serializations" multiple size="5"></select>
+            </div>
+
+            <button type="submit" class="btn-primary">Save Changes</button>
+        </form>
+    </div>
+
+    <!-- Script Logic for Populating & Sending -->
+    <script>
+        const ENTRY_ID = {{ entry_id }};
+        let metaData = {};
+
+        async function init() {
+            try {
+                // 1. Load Metadata (Dropdown options)
+                const metaRes = await fetch('/api/metadata');
+                metaData = await metaRes.json();
+
+                // 2. Load Entry Data
+                const entryRes = await fetch(`/api/entry/${ENTRY_ID}`);
+                const entry = await entryRes.json();
+
+                if (entry.error) {
+                    document.getElementById('loading').textContent = 'Error: ' + entry.error;
+                    return;
+                }
+
+                // 3. Render Form
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('updateForm').classList.remove('hidden');
+                document.getElementById('entryHeaderID').textContent = `#${ENTRY_ID}`;
+
+                populateForm(entry);
+
+            } catch (e) {
+                document.getElementById('loading').textContent = 'Error loading data: ' + e;
+                console.error(e);
+            }
+        }
+
+        // Helper to fill dropdowns
+        function fillSelect(id, list, valKey, textKey, selectedValOrList) {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Select...</option>';
+
+            // Check if filtering is needed? (e.g. ItemType by Medium)
+            // For now assume list is correct context or filter simpler
+
+            list.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item[valKey];
+                opt.textContent = item[textKey];
+
+                // M2M (Array) or Single (Value)
+                if (Array.isArray(selectedValOrList)) {
+                    if (selectedValOrList.includes(item[valKey])) opt.selected = true;
+                } else {
+                    if (item[valKey] == selectedValOrList) opt.selected = true;
+                }
+
+                sel.appendChild(opt);
+            });
+        }
+
+        function populateForm(entry) {
+            // Basic
+            document.getElementById('entry_id').value = entry.entry_id;
+            document.getElementById('medium_type').value = entry.medium_type;
+            document.getElementById('title_name').value = entry.title_name;
+            document.getElementById('score').value = entry.score;
+            document.getElementById('description').value = entry.description || '';
+
+            // Status Filtering
+            let statusOpts = metaData.StatusType;
+            if (entry.medium_type === 'anime') {
+                const animeStatuses = ['Currently Airing', 'Finished Airing', 'Not yet aired'];
+                statusOpts = statusOpts.filter(s => animeStatuses.includes(s.status_name));
+            } else {
+                const mangaStatuses = ['Publishing', 'Finished', 'On Hiatus', 'Discontinued'];
+                statusOpts = statusOpts.filter(s => mangaStatuses.includes(s.status_name));
+            }
+            fillSelect('status_id', statusOpts, 'status_id', 'status_name', entry.status_id);
+
+            // Item Type (Filter by medium)
+            const typeOpts = metaData.ItemType.filter(i => i.medium_type === entry.medium_type);
+            fillSelect('item_type_id', typeOpts, 'item_type_id', 'type_name', entry.item_type_id);
+
+            // Common M2M
+            fillSelect('genres', metaData.Genre, 'genre_id', 'name', entry.genres);
+            fillSelect('themes', metaData.Theme, 'theme_id', 'name', entry.themes);
+            fillSelect('demographics', metaData.Demographic, 'demographic_id', 'name', entry.demographics);
+
+            // Conditional
+            if (entry.medium_type === 'anime') {
+                document.getElementById('animeFields').classList.remove('hidden');
+
+                document.getElementById('episodes').value = entry.episodes;
+                document.getElementById('duration_minutes').value = entry.duration_minutes || '';
+                document.getElementById('premier_date_year').value = entry.premier_date_year;
+                document.getElementById('premier_date_season').value = entry.premier_date_season; // Static select
+
+                fillSelect('source_id', metaData.Source, 'source_id', 'source_name', entry.source_id);
+                fillSelect('age_rating_id', metaData.AgeRating, 'age_rating_id', 'code', entry.age_rating_id);
+                fillSelect('studios', metaData.Studio, 'studio_id', 'name', entry.studios);
+                fillSelect('producers', metaData.Producer, 'producer_id', 'name', entry.producers);
+                fillSelect('licensors', metaData.Licensor, 'licensor_id', 'name', entry.licensors);
+
+            } else {
+                document.getElementById('mangaFields').classList.remove('hidden');
+
+                document.getElementById('volumes').value = entry.volumes;
+                document.getElementById('chapters').value = entry.chapters;
+
+                fillSelect('authors', metaData.Author, 'author_id', 'display_name', entry.authors);
+                fillSelect('serializations', metaData.Serialization, 'serialization_id', 'name', entry.serializations);
+            }
+        }
+
+        // Submission
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const data = {};
+            const formData = new FormData(form);
+
+            // Collect Data
+            // Handle single inputs
+            for (let [key, val] of formData.entries()) {
+                // If the select is multiple, we handle it separately below or ensure logic
+                // FormData.entries() iterates duplicates for multiple select
+            }
+
+            // Manual collection to handle arrays robustly
+            const keys = Array.from(formData.keys());
+            const uniqueKeys = [...new Set(keys)];
+
+            uniqueKeys.forEach(k => {
+                const vals = formData.getAll(k);
+                if (vals.length > 1 ||
+                    ['genres', 'themes', 'demographics', 'studios', 'producers', 'licensors', 'authors', 'serializations'].includes(k)) {
+                    data[k] = vals; // Always array for these keys
+                } else {
+                    data[k] = vals[0] === "" ? null : vals[0];
+                }
+            });
+
+            try {
+                const res = await fetch(`/api/update/${ENTRY_ID}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const json = await res.json();
+                if (res.ok) {
+                    alert("Updated Successfully!");
+                    window.location.href = '/'; // Go back home
+                } else {
+                    alert("Error: " + json.error);
+                }
+            } catch (err) {
+                alert("Request failed: " + err);
+            }
+        });
+
+        // Initialize
+        init();
+    </script>
+</body>
+
+</html>

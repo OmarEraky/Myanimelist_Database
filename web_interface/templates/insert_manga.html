@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Insert Manga</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="title">MyAnimeList DB</div>
+            <nav>
+                <a href="/">Search</a>
+                <a href="/insert/anime">Insert Anime</a>
+                <a href="/insert/manga" class="active">Insert Manga</a>
+            </nav>
+        </header>
+
+        <div class="search-box" style="display: block;">
+            <h2>Add New Manga</h2>
+            <form id="insertMangaForm">
+
+                <div class="form-group"><label>MAL ID</label><input type="number" name="mal_id" required></div>
+                <div class="form-group"><label>Title</label><input type="text" name="title_name" required></div>
+                <div class="form-group"><label>Score</label><input type="number" name="score" step="0.01" max="10">
+                </div>
+
+                <div class="form-group">
+                    <label>Item Type</label>
+                    <select id="in_item_type" name="item_type_id"></select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="in_status" name="status_id"></select>
+                </div>
+
+                <div class="form-group"><label>Volumes</label><input type="number" name="volumes"></div>
+                <div class="form-group"><label>Chapters</label><input type="number" name="chapters"></div>
+
+                <h3>Relationships (Hold Ctrl to select multiple)</h3>
+
+                <div class="form-group"><label>Genres</label><select multiple id="in_genre" name="genres"
+                        style="height: 100px;"></select></div>
+                <div class="form-group"><label>Themes</label><select multiple id="in_theme" name="themes"
+                        style="height: 100px;"></select></div>
+                <div class="form-group"><label>Demographics</label><select multiple id="in_demographic"
+                        name="demographics" style="height: 60px;"></select></div>
+
+                <div class="form-group"><label>Authors</label><select multiple id="in_author" name="authors"
+                        style="height: 100px;"></select></div>
+                <div class="form-group"><label>Serializations</label><select multiple id="in_serialization"
+                        name="serializations" style="height: 100px;"></select></div>
+
+                <button type="submit">Save Manga</button>
+            </form>
+            <div id="message" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
